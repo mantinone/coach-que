@@ -4,7 +4,10 @@ const {
   createRecord,
   findRecord,
   updateRecord,
-  deleteRecord} = require('./utilities')
+  deleteRecord
+} = require('./utilities')
+
+const moment = require('moment-timezone')
 
 const createAppointment = attributes =>
   createRecord('appointments', attributes).then( appointment => appointment )
@@ -36,11 +39,22 @@ const findAllAppointmentByMenteeHandle = mentee_handle =>
 const deleteAppointmentById = apt_id =>
   deleteRecord('appointments', 'id', apt_id)
 
+const findAllAppointmentsByWeek = weekDate => {
+  const startOfWeek = moment( weekDate ).startOf( 'week' )
+  const endOfWeek = startOfWeek.clone().endOf( 'week' )
+  return knex
+    .table( 'appointments' )
+    .whereBetween( 'created_at_timestamp', [ startOfWeek, endOfWeek ] )
+    .returning( '*' )
+    .orderBy( 'coach_handle', 'asc' )
+}
+
 module.exports = {
   createAppointment,
   findFirstAppointmentByMenteeHandle,
   findFirstAppointmentByCoachId,
   findAllAppointmentByMenteeHandle,
   findAllAppointmentByCoachId,
-  deleteAppointmentById
+  deleteAppointmentById,
+  findAllAppointmentsByWeek,
 }
