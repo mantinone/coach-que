@@ -8,6 +8,8 @@ const cors = require('cors')
 const passport = require('passport');
 const enforce = require('express-sslify');
 
+require('babel-polyfill')
+
 const webpack = require('webpack')
 const webpackMiddleware = require('webpack-dev-middleware')
 const webpackConfig = require('./webpack.config.js')
