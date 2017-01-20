@@ -88,11 +88,29 @@ const averageRequestedSessionByMentee = appointments => {
   return totalMentees / totalAppointments
 }
 
+const analysisOfWeek = appointments => {
+  const totalAppointments = totalAppointmentsByWeek( appointments )
+  const appointmentsByCoach = weeklyNumberOfAppointmentsByCoach( appointments )
+  const longestWaitTimeInMinutes = findLongestWaitTime( appointments )
+  const averageWaitTimeInMinutes = getAverageWaitTime( appointments )
+  const totalNumberOfMentees = numberOfMentees( appointments )
+  const averageSessionByMentee = averageRequestedSessionByMentee( appointments )
+  return {
+    totalAppointments,
+    appointmentsByCoach,
+    longestWaitTimeInMinutes,
+    averageWaitTimeInMinutes,
+    totalNumberOfMentees,
+    averageSessionByMentee
+  }
+}
+
 module.exports = {
+  analysisOfWeek,
   totalAppointmentsByWeek,
   weeklyNumberOfAppointmentsByCoach,
   findLongestWaitTime,
   getAverageWaitTime,
   numberOfMentees,
-  averageRequestedSessionByMentee
+  averageRequestedSessionByMentee,
 }

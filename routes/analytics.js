@@ -4,14 +4,7 @@ const rp = require('request-promise')
 const config = require('../config/config').readConfig()
 const moment = require('moment-timezone')
 
-const {
-  totalAppointmentsByWeek,
-  weeklyNumberOfAppointmentsByCoach,
-  findLongestWaitTime,
-  getAverageWaitTime,
-  numberOfMentees,
-  averageRequestedSessionByMentee
-} = require('../models/analytics')
+const { analysisOfWeek } = require('../models/analytics')
 
 const {
   findAllAppointmentsByWeek
@@ -21,30 +14,8 @@ router.get('/', (request, response) => {
   const week = moment()
   findAllAppointmentsByWeek(week)
     .then( weeklyAppointments => {
-      return Promise.all([
-        totalAppointmentsByWeek( weeklyAppointments ),
-        weeklyNumberOfAppointmentsByCoach( weeklyAppointments ),
-        findLongestWaitTime( weeklyAppointments ),
-        getAverageWaitTime( weeklyAppointments ),
-        numberOfMentees( weeklyAppointments ),
-        averageRequestedSessionByMentee( weeklyAppointments )
-      ]).then( results => {
-        const totalAppointments = results[0]
-        const coachesNumberOfAppointments = results[1]
-        const longestWaitTime = results[2]
-        const averageWaitTime = results[3]
-        const totalMentees = results[4]
-        const averageSessionByMentee = results[5]
-
-        response.json({
-          totalAppointments,
-          coachesNumberOfAppointments,
-          longestWaitTime,
-          averageWaitTime,
-          totalMentees,
-          averageSessionByMentee
-        })
-      })
+      const analysis = analysisOfWeek( weeklyAppointments )
+      response.json( analysis )
     })
 })
 

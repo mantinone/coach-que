@@ -1,8 +1,9 @@
 const { expect, app, chai, chaiDateTime } = require( '../setup' )
 const moment = require( 'moment' )
 const { week1Appointments } = require( './mock_data/analyticsTestData' )
-
+const { createAppointment } = require( '../../io/database/appointments' )
 const {
+  analysisOfWeek,
   totalAppointmentsByWeek,
   weeklyNumberOfAppointmentsByCoach,
   findLongestWaitTime,
@@ -11,10 +12,8 @@ const {
   averageRequestedSessionByMentee,
 } = require( '../../models/analytics' )
 
-const { createAppointment } = require( '../../io/database/appointments' )
-
-
 describe( 'Analytics Models: ', () => {
+
   describe( 'totalAppointmentsByWeek', () => {
     it( 'returns total number of appointments in a specified week', () => {
       const totalAppointmentsResult = 
@@ -35,18 +34,18 @@ describe( 'Analytics Models: ', () => {
   })
 
   describe( 'findLongestWaitTime', () => {
-    it( 'returns longest wait time for appointments', () => {
-      const longestWaitTime = findLongestWaitTime( week1Appointments )
-      expect( longestWaitTime ).to.be.a( 'number' )
-      expect( longestWaitTime ).to.eql( 371 )
+    it( 'returns longest wait time for appointments in minutes', () => {
+      const longestWaitTimeInMinutes = findLongestWaitTime( week1Appointments )
+      expect( longestWaitTimeInMinutes ).to.be.a( 'number' )
+      expect( longestWaitTimeInMinutes ).to.eql( 371 )
     })
   })
 
   describe( 'getAverageWaitTime', () => {
-    it( 'returns average wait time for appointments', () => {
-      const averageWaitTime = getAverageWaitTime( week1Appointments )
-      expect( averageWaitTime ).to.be.a( 'number' )
-      expect( averageWaitTime ).to.eql( 195.5 )
+    it( 'returns average wait time for appointments in minutes', () => {
+      const averageWaitTimeInMinutes = getAverageWaitTime( week1Appointments )
+      expect( averageWaitTimeInMinutes ).to.be.a( 'number' )
+      expect( averageWaitTimeInMinutes ).to.eql( 195.5 )
     })
   })
 
@@ -66,4 +65,20 @@ describe( 'Analytics Models: ', () => {
       expect( averageRequestedSession ).to.eql( 1.1 )
     })
   })
+
+  describe( 'analysisOfWeek', () => {
+    it( 'returns an object with all analytics data', () => {
+      const result = analysisOfWeek( week1Appointments )
+      expect( result ).to.be.an( 'object' )
+      expect( result ).to.eql({
+        totalAppointments: 10,
+        appointmentsByCoach: { coachQ: 5, secondCoach: 4, lazyCoach: 1 },
+        longestWaitTimeInMinutes: 371,
+        averageWaitTimeInMinutes: 195.5,
+        totalNumberOfMentees: 11,
+        averageSessionByMentee: 1.1
+      })
+    })
+  })
+
 })
