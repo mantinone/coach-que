@@ -40,8 +40,8 @@ const deleteAppointmentById = apt_id =>
   deleteRecord('appointments', 'id', apt_id)
 
 const findAllAppointmentsByWeek = weekDate => {
-  const startOfWeek = moment( weekDate ).startOf( 'week' )
-  const endOfWeek = startOfWeek.clone().endOf( 'week' )
+  const startOfWeek = moment( weekDate ).startOf( 'week' ).add({ d: 1, h: 8 })
+  const endOfWeek = startOfWeek.clone().startOf( 'week' ).add({ d: 5, h: 18 })
   return knex
     .table( 'appointments' )
     .whereBetween( 'created_at_timestamp', [ startOfWeek, endOfWeek ] )

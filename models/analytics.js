@@ -10,87 +10,80 @@ const waitTimeDurations = waitTimes => {
 }
 
 const appointmentWaitTimes = appointments => {
-  const waitTimes = []
-  appointments.map( appointment => {
+  return appointments.reduce( ( waitTimes, appointment ) => {
     const apptObject = {
       id: appointment.id,
       created_at: appointment.created_at_timestamp,
       startTime: appointment.appointment_start
     }
+    
     waitTimes.push( apptObject )
-  })
 
-  return waitTimes
+    return waitTimes
+  }, [])
 }
 
 const weeklyNumberOfAppointmentsByMentees = appointments => {
-  const nameArray = appointments.reduce( ( result, appointment ) => {
+  return appointments.reduce( ( result, appointment ) => {
     return result.concat( appointment.mentee_handles )
   }, [])
+    .reduce( ( menteeNames, name ) => {
+      if ( name in menteeNames ) {
+        menteeNames[ name ] ++
+      }
+      else {
+        menteeNames[ name ] = 1
+      }
 
-  return nameArray.reduce( ( menteeNames, name ) => {
-    if ( name in menteeNames ) {
-      menteeNames[ name ] ++
-    }
-    else {
-      menteeNames[ name ] = 1
-    }
+      return menteeNames
+    }, {})
+}
 
-    return menteeNames
-  }, {})
+const getWaitTimesArray = appointments => {
+  const waitTimes = appointmentWaitTimes( appointments )
+  return waitTimeDurations( waitTimes )
 }
 
 const totalAppointmentsByWeek = appointments => appointments.length
 
 const weeklyNumberOfAppointmentsByCoach = appointments => {
-  const coachesNameArray = appointments.map( appointment => 
-    appointment.coach_handle )
+  return appointments.map( appointment => appointment.coach_handle )
+    .reduce( ( coachNames, name ) => {
+      if ( name in coachNames ) {
+        coachNames[ name ] ++
+      } else {
+        coachNames[ name ] = 1
+      }
 
-  return coachesNameArray.reduce( ( coachNames, name ) => {
-    if ( name in coachNames ) {
-      coachNames[ name ] ++
-    } else {
-      coachNames[ name ] = 1
-    }
-
-    return coachNames
-  }, {} )
+      return coachNames
+    }, {} )
 }
 
 const findLongestWaitTime = appointments => {
-  const waitTimes = appointmentWaitTimes( appointments )
-  const minuteDifferentialArray = waitTimeDurations( waitTimes )
-  const longestWaitTime = minuteDifferentialArray
+  return getWaitTimesArray( appointments )
     .reduce( ( element, secondElement ) =>
       ( element > secondElement ? element : secondElement )
     )
-
-  return longestWaitTime
 }
 
 const getAverageWaitTime = appointments => {
-  const waitTimes = appointmentWaitTimes( appointments )
-  const durationsInMinutes = waitTimeDurations( waitTimes )
-  const totalMinutes = durationsInMinutes
+  const totalMinutes = getWaitTimesArray( appointments )
     .reduce( ( total, time ) => total + time, 0  )
   
-  return totalMinutes / durationsInMinutes.length
-} 
+  return totalMinutes / getWaitTimesArray( appointments ).length
+}
 
-const amountofMentees = appointments => {
-  let count = 0
-  const appointmentArr = weeklyNumberOfAppointmentsByMentees( appointments )
-  for( let names in appointmentArr ) {
-    if( appointmentArr.hasOwnProperty( names ))
-      ++count
-  }
+const numberOfMentees = appointments => {
+  const menteesObject = weeklyNumberOfAppointmentsByMentees( appointments ) 
   
-  return count
+  return Object.keys( menteesObject ).reduce( ( previous, key ) => {
+    return previous += 1
+  }, 0)
 }
 
 const averageRequestedSessionByMentee = appointments => {
   const totalAppointments = totalAppointmentsByWeek( appointments )
-  const totalMentees = amountofMentees( appointments )
+  const totalMentees = numberOfMentees( appointments )
 
   return totalMentees / totalAppointments
 }
@@ -100,6 +93,6 @@ module.exports = {
   weeklyNumberOfAppointmentsByCoach,
   findLongestWaitTime,
   getAverageWaitTime,
-  amountofMentees,
+  numberOfMentees,
   averageRequestedSessionByMentee
 }

@@ -9,7 +9,7 @@ const {
   weeklyNumberOfAppointmentsByCoach,
   findLongestWaitTime,
   getAverageWaitTime,
-  amountofMentees,
+  numberOfMentees,
   averageRequestedSessionByMentee
 } = require('../models/analytics')
 
@@ -26,7 +26,7 @@ router.get('/', (request, response) => {
         weeklyNumberOfAppointmentsByCoach( weeklyAppointments ),
         findLongestWaitTime( weeklyAppointments ),
         getAverageWaitTime( weeklyAppointments ),
-        amountofMentees( weeklyAppointments ),
+        numberOfMentees( weeklyAppointments ),
         averageRequestedSessionByMentee( weeklyAppointments )
       ]).then( results => {
         const totalAppointments = results[0]

@@ -7,7 +7,7 @@ const {
   weeklyNumberOfAppointmentsByCoach,
   findLongestWaitTime,
   getAverageWaitTime,
-  amountofMentees,
+  numberOfMentees,
   averageRequestedSessionByMentee,
 } = require( '../../models/analytics' )
 
@@ -50,9 +50,9 @@ describe( 'Analytics Models: ', () => {
     })
   })
 
-  describe( 'amountofMentees', () => {
+  describe( 'numberOfMentees', () => {
     it( 'returns total number of mentees requesting a session', () => {
-      const totalMentees = amountofMentees( week1Appointments )
+      const totalMentees = numberOfMentees( week1Appointments )
       expect( totalMentees ).to.be.a( 'number' )
       expect( totalMentees ).to.eql( 11 )
     })
