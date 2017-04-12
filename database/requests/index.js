@@ -1,6 +1,7 @@
 const db = require( '../db' )
 const Event = require( '../events' )
 const decorate = require( './decorate' )
+const moment = require( 'moment' )
 
 const SELECT_TEAM_ID = `
   SELECT teams.id FROM goals
@@ -35,6 +36,11 @@ const FOR_TEAM = `
 
 const UNRESOLVED = `SELECT * FROM requests WHERE resolved_at IS NULL`
 
+const FOR_CYCLE = `
+  SELECT * FROM requests JOIN teams
+  ON teams.id = requests.team_id WHERE teams.cycle = $1
+`
+
 const forTeam = player_id =>
   db.oneOrNone( FOR_TEAM, player_id )
     .then( request => request === null ? Promise.reject( null ) : request )
@@ -49,11 +55,33 @@ const forTeam = player_id =>
 
 const unresolved = () => db.any( UNRESOLVED )
 
+const forCycle = cycle =>
+  db.any( FOR_CYCLE, cycle )
+    // .then( result => {
+    //   console.log(result);
+    // })
+
+const longestWaitTime = requests => {
+  let miliseconds = requests.reduce(( accumulator, request ) => {
+    if ( request.resolved_at !== null ) {
+      if (( request.resolved_at - request.created_at ) > accumulator ) {
+        return request.resolved_at - request.created_at
+      } else {
+        return accumulator
+      }
+    }
+  }, 0 )
+
+  return moment.duration(miliseconds).asMinutes()
+}
+
 module.exports = {
   create: player_id => db.one( CREATE, player_id ),
   cancel: player_id => db.one( CANCEL, player_id ),
   resolve: player_id => db.one( RESOLVE, player_id ),
   forTeam,
   unresolved,
-  all: () => unresolved().then( decorate )
+  all: () => unresolved().then( decorate ),
+  forCycle,
+  longestWaitTime
 }
