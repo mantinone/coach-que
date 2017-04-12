@@ -1,3 +1,129 @@
+const moment = require( 'moment' )
+
+const { active, isActive } = require( '../../../frontend/prioritize' )
+
+const userId = 'test-user-id'
+
+const TIMES = {
+  now: moment().format('YYYY-MM-DD HH:mm:ss.SSSSSS'),
+  '15minutesAgo': moment().subtract(15, 'minutes').format('YYYY-MM-DD HH:mm:ss.SSSSSS'),
+  '60minutesAgo': moment().subtract(60, 'minutes').format('YYYY-MM-DD HH:mm:ss.SSSSSS')
+}
+
+const REQUESTS = [
+  {
+    events: [
+      {"by": "Bob Dole", "question": "0: my team requested, within threshold"}
+    ],
+    created_at: TIMES['15minutesAgo'],
+    escalations: 0,
+    goal: {
+      coach_id: userId
+    }
+  },
+  {
+    events: [
+      {"by": "Bob Dole", "question": "1: my team requested, past threshold"}
+    ],
+    created_at: TIMES['60minutesAgo'],
+    escalations: 0,
+    goal: {
+      coach_id: userId
+    }
+  },
+  {
+    events: [
+      {"by": "Bob Dole", "question": "2: other team requested, within threshold"}
+    ],
+    created_at: TIMES['15minutesAgo'],
+    escalations: 0,
+    goal: {
+      coach_id: 'other-user-id'
+    }
+  },
+  {
+    events: [
+      {"by": "Bob Dole", "question": "3: other team requested, past threshold"}
+    ],
+    created_at: TIMES['60minutesAgo'],
+    escalations: 0,
+    goal: {
+      coach_id: 'other-user-id'
+    }
+  },
+  {
+    events: [
+      {"by": "Bob Dole", "question": "4: other coach claimed, past threshold"},
+      {"by": "Other Coach", "claimed_by": "other-user-id", "request_id": "6"}
+    ],
+    created_at: TIMES['60minutesAgo'],
+    escalations: 0,
+    goal: {
+      coach_id: 'other-user-id'
+    }
+  },
+  {
+    events: [
+      {"by": "Bob Dole", "question": "5: other coach claimed, under threshold"},
+      {"by": "Other Coach", "claimed_by": "other-user-id", "request_id": "6"}
+    ],
+    created_at: TIMES['15minutesAgo'],
+    escalations: 0,
+    goal: {
+      coach_id: 'other-user-id'
+    }
+  },
+  {
+    events: [
+      {"by": "Bob Dole", "question": "6: other coach escalated, past threshold, not claimed (most recently)"},
+      {"by": "Other Coach", "claimed_by": "other-user-id", "request_id": "6"},
+      {"by": "Other Coach", "request_id": "6", "escalated_by": "other-user-id"}
+    ],
+    created_at: TIMES['60minutesAgo'],
+    escalations: 1,
+    goal: {
+      coach_id: 'other-user-id'
+    }
+  },
+  {
+    events: [
+      {"by": "Bob Dole", "question": "7: other coach escalated, past threshold, not claimed (most recently)"},
+      {"by": "Other Coach", "claimed_by": "other-user-id", "request_id": "6"},
+      {"by": "Other Coach", "request_id": "6", "escalated_by": "other-user-id"}
+    ],
+    created_at: TIMES['60minutesAgo'],
+    escalations: 1,
+    goal: {
+      coach_id: 'other-user-id'
+    }
+  },
+  {
+    events: [
+      {"by": "Bob Dole", "question": "8: claimed and escalated by me"},
+      {"by": "Me", "claimed_by": userId, "request_id": "6"},
+      {"by": "Me", "request_id": "6", "escalated_by": userId}
+    ],
+    created_at: TIMES['60minutesAgo'],
+    escalations: 1,
+    goal: {
+      coach_id: userId
+    }
+  },
+  {
+    events: [
+      {"by": "Bob Dole", "question": "9: escalated and claimed by someone else"},
+      {"by": "Other Coach", "claimed_by": 'other-user-id', "request_id": "6"},
+      {"by": "Other Coach", "request_id": "6", "escalated_by": 'other-user-id'},
+      {"by": "third coach", "claimed_by": 'third-user-id', "request_id": "6"}
+    ],
+    created_at: TIMES['60minutesAgo'],
+    escalations: 1,
+    goal: {
+      coach_id: userId
+    }
+  }
+]
+
 describe( 'prioritize', () => {
 
   describe( 'active', () => {
@@ -18,9 +144,17 @@ describe( 'prioritize', () => {
 
   describe( 'isActive', () => {
     describe( 'when request is claimed by me', () => {
+
+      const request = {
+        events: [
+          {"by": "Bob Dole", "question": "what"},
+          {"by": "Ethan Stark", "claimed_by": "test-user-id", "request_id": "6"}
+        ]
+      }
+
       it( 'returns true', () => {
         // TODO: define request
-        expect( isActive( request )).to.be.true
+        expect( isActive( request, userId )).to.be.true
       })
     })
 
