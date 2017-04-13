@@ -24,6 +24,8 @@ describe( 'isVisible', () => {
 
   visible: my goal && not claimed || other coach past threshold && not claimed || escalations > 0 && most recent event is not claimed
    || escalations > 0 && none of the escalations by me
+
+   escalations > 0 && none of the escalations by me && most recent event is not claimed
   hidden: ! visible
   -- input: all requests, output: all requests, some with hidden: true
   priority: adds a priority to all requests
