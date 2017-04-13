@@ -1,23 +1,77 @@
 const moment = require( 'moment' )
 const { request, minutesAgo, DEFAULT_COACH_ID, OTHER_ID } = require( '../../fixtures/requests' )
-cont testNow = moment()
+const { THRESHOLD, THRESHOLD_UNIT, calculatePriority, prioritize
+} = require( '../../../frontend/prioritization/prioritize' )
+const { CREATE, ESCALATE } = require( '../../../events/requests/constants' )
+
 
 describe( 'calculatePriority', () => {
 
-  describe( 'Unescalated event created 1m ago' () => {
-    it( 'returns priority of 60000', () => {
+  describe( 'comparing one older and one newer request', () => {
 
+    const newerRequest = request( {
+      events: [{ created_at: minutesAgo( 3 ) }]
+    })
+
+    const olderRequest = request( {
+      events: [{ created_at: minutesAgo( 60 ) }]
+    })
+
+    it( 'gives higher priority to an older request', () => {
+
+      expect( calculatePriority( olderRequest ) )
+        .to.be.above( calculatePriority( newerRequest) )
     })
   })
 
+  describe( 'comparing a recently escalated request with an older unescalated request', () => {
+
+    const recentlyEscalated = request( {
+      events: [{ name: CREATE, created_at: minutesAgo( 61 ) },
+        { name: ESCALATE, created_at: minutesAgo( 3 ) }
+      ]
+    })
+
+    const olderUnescalated = request( {
+      events: [{ name: CREATE, created_at: minutesAgo( 60 ) }]
+    })
+
+    it( 'gives higher prioirty to the older unescalated request', () => {
+
+      expect( calculatePriority( olderUnescalated ) )
+        .to.be.above( calculatePriority( recentlyEscalated ) )
+    })
+  })
 })
 
-/*
-priority: adds a priority to all requests
--- input: all requests, output: all requests, all with priority: integer
-calculatePriority:
--- input: request ({ events }), output: integer
+describe.only( 'prioritize', () => {
 
+  describe( 'given a series of requests', () => {
 
-priority = now - ( from end of events: event[name=escalate] || event[name=create] ).created_at
-*/
+    const priorityOneEvent = request({
+      events: [{ name: CREATE, created_at: minutesAgo( 60 ) }]
+    })
+
+    const priorityTwoEvent = request( {
+      events: [{ name: CREATE, created_at: minutesAgo( 61 ) },
+        { name: ESCALATE, created_at: minutesAgo( 3 ) }
+      ]
+    })
+
+    const priorityThreeEvent = request( {
+      events: [{ name: CREATE, created_at: minutesAgo( 2 ) }]
+    })
+
+    const testRequests = [ priorityThreeEvent, priorityOneEvent, priorityTwoEvent ]
+
+    it( 'orders them by most recent event created_at, descending', () => {
+      const sortedRequests = prioritize(testRequests)
+
+      expect( sortedRequests[0].events[0].created_at ).to.equal( priorityOneEvent.events[0].created_at )
+
+      expect( sortedRequests[1].events[1].created_at ).to.equal( priorityTwoEvent.events[1].created_at )
+
+      expect( sortedRequests[2].events[0].created_at ).to.equal( priorityThreeEvent.events[0].created_at )
+    })
+  })
+})

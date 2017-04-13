@@ -121,7 +121,7 @@ describe( 'lastEventIsNot', () => {
   })
 })
 
-describe.only( 'notEscalatedByMe', () => {
+describe( 'notEscalatedByMe', () => {
 
   describe( 'when the request was escalated by me', () => {
 
