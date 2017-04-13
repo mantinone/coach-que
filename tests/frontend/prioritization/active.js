@@ -1,6 +1,4 @@
-const moment = require( 'moment' )
-
-const { request, minutesAgo, DEFAULT_COACH_ID, OTHER_ID } = require( '../../fixtures/requests' )
+const { request, DEFAULT_COACH_ID, OTHER_ID } = require( '../../fixtures/requests' )
 const { active, isActive } = require( '../../../frontend/prioritization/active' )
 
 describe( 'active', () => {

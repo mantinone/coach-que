@@ -1,8 +1,4 @@
 const moment = require( 'moment' )
-const { CLAIM, ESCALATE } = require( '../../events/requests/constants' )
-
-const THRESHOLD = 30
-const THRESHOLD_UNIT = 'minute'
 
 const calculatePriority = ({ events }) => moment( ).diff( moment( events[ events.length - 1 ].created_at ) )
 

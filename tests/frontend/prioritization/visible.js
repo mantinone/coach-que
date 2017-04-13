@@ -1,6 +1,5 @@
-const moment = require( 'moment' )
 const { request, minutesAgo, DEFAULT_COACH_ID, OTHER_ID } = require( '../../fixtures/requests' )
-const { THRESHOLD, THRESHOLD_UNIT, isMyGoal, isUnclaimed, isPastThreshold,
+const { THRESHOLD, isMyGoal, isUnclaimed, isPastThreshold,
   isEscalated, lastEventIsNot, notEscalatedByMe
   } = require( '../../../frontend/prioritization/visible' )
 const { CLAIM, ESCALATE } = require( '../../../events/requests/constants' )

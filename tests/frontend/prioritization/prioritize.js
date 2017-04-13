@@ -1,6 +1,5 @@
-const moment = require( 'moment' )
-const { request, minutesAgo, DEFAULT_COACH_ID, OTHER_ID } = require( '../../fixtures/requests' )
-const { THRESHOLD, THRESHOLD_UNIT, calculatePriority, prioritize
+const { request, minutesAgo } = require( '../../fixtures/requests' )
+const { calculatePriority, prioritize
 } = require( '../../../frontend/prioritization/prioritize' )
 const { CREATE, ESCALATE } = require( '../../../events/requests/constants' )
 
@@ -44,7 +43,7 @@ describe( 'calculatePriority', () => {
   })
 })
 
-describe.only( 'prioritize', () => {
+describe( 'prioritize', () => {
 
   describe( 'given a series of requests', () => {
 
