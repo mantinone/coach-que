@@ -1,54 +1,157 @@
 const moment = require( 'moment' )
 const { request, minutesAgo, DEFAULT_COACH_ID, OTHER_ID } = require( '../../fixtures/requests' )
-const { visible, isVisible } = require( '../../../frontend/prioritization/visible' )
+const { THRESHOLD, THRESHOLD_UNIT, isMyGoal, isUnclaimed, isPastThreshold,
+  isEscalated, lastEventIsNot, notEscalatedByMe
+  } = require( '../../../frontend/prioritization/visible' )
+const { CLAIM, ESCALATE } = require( '../../../events/requests/constants' )
 
-describe( 'visible', () => {
+describe( 'isMyGoal', () => {
 
+  describe( 'when request goal.coach_id matches my id', () => {
+
+    it( 'returns true', () => {
+      const testRequest = request({ coach_id: DEFAULT_COACH_ID })
+
+      expect( isMyGoal( testRequest, DEFAULT_COACH_ID )).to.be.true
+    })
+  })
+
+  describe( 'when request goal.coach_id does not match my id', () => {
+
+    it( 'returns false', () => {
+      const testRequest = request({ coach_id: OTHER_ID })
+
+      expect( isMyGoal( testRequest, DEFAULT_COACH_ID )).to.be.false
+    })
+  })
 })
 
-describe( 'isVisible', () => {
+describe( 'isUnclaimed', () => {
 
+  describe( 'when request does not contain any claim events', () => {
+
+    it( 'returns true', () => {
+      const testRequest = request({})
+
+      expect( isUnclaimed( testRequest )).to.be.true
+    })
+  })
+
+  describe( 'when request has been claimed', () => {
+
+    it( 'returns false', () => {
+      const testRequest = request({
+        events: [ { name: CLAIM } ]
+      })
+
+      expect( isUnclaimed( testRequest )).to.be.false
+    })
+  })
 })
 
+describe( 'isPastThreshold', () => {
 
-/*
-  Requests:
+  describe( 'when request is past the threshold', () => {
 
-  item 1 (true): my team requests a session, never claimed
-  item 2 (false): other coach team requests a session, under threshold, never claimed
-  item 3 (true): other coach team requests a session, past threshold, never claimed
-  item 4 (false): other coach team requests a session, past threshold, not escalated, claimed
-  item 5 (false): other coach team request, not escalated, claimed
-  item 6 (true): other coach team request, escalated, not claimed (most recent)
-  item 7 (false): claimed and escalated by me
+    it( 'returns true', () => {
+      const testRequest = request({ created_at: minutesAgo( THRESHOLD + 1 )})
 
-  visible: my goal && not claimed || other coach past threshold && not claimed || escalations > 0 && most recent event is not claimed
-   || escalations > 0 && none of the escalations by me
+      expect( isPastThreshold( testRequest )).to.be.true
+    })
+  })
 
-   escalations > 0 && none of the escalations by me && most recent event is not claimed
-  hidden: ! visible
-  -- input: all requests, output: all requests, some with hidden: true
-  priority: adds a priority to all requests
-  -- input: all requests, output: all requests, all with priority: integer
-  calculatePriority:
-  -- input: request ({ events }), output: integer
+  describe( 'when request is under the threshold', () => {
 
+    it( 'returns false', () => {
+      const testRequest = request({ created_at: minutesAgo( THRESHOLD - 1 )})
 
-  priority = now - ( from end of events: event[name=escalate] || event[name=create] ).created_at
+      expect( isPastThreshold( testRequest )).to.be.false
+    })
+  })
+})
 
-  { age: 32 minutes, escalations: 0, age_since_last_escalation: 32 minutes }
-  { age: 51 minutes, escalations: 1, last_escalated_at: 30 minutes, age_since_last_escalation: 21 minutes }
-  { age: 51 minutes, escalations: 2, last_escalated_at: 40 minutes, age_since_last_escalation: 11 minutes }
+describe( 'isEscalated', () => {
 
-  { age: 51 minutes, escalations: 1 }
-  { age: 50 minutes, escalations: 0 }
-  { age: 32 minutes, escalations: 0 }
-  { age: 31 minutes, escalations: 2 }
-  { age: 31 minutes, escalations: 1 }
-  { age: 31 minutes, escalations: 0 }
-  { age: 30 minutes, escalations: 0 }
-  { age: 29 minutes, escalations: 1 }
-  { age: 29 minutes, escalations: 0 }
-  { age: 0 minutes, escalations: 1 }
-  { age: 0 minutes, escalations: 0 }
-*/
+  describe( 'when request has been escalated', () => {
+
+    it( 'returns true', () => {
+      const testRequest = request({ events: [
+        { name: CLAIM },
+        { name: ESCALATE }
+      ] })
+
+      expect( isEscalated( testRequest )).to.be.true
+    })
+  })
+
+  describe( 'when request has not been escalated', () => {
+
+    it( 'returns false', () => {
+      const testRequest = request({ events: [ { name: CLAIM } ] })
+
+      expect( isEscalated( testRequest )).to.be.false
+    })
+  })
+})
+
+describe( 'lastEventIsNot', () => {
+
+  describe( 'when the last event was escalate', () => {
+
+    it( 'lastEventIsNot( request, "claim" ) returns true', () => {
+      const testRequest = request({ events: [
+        { name: CLAIM },
+        { name: ESCALATE }
+      ] })
+
+      expect( lastEventIsNot( testRequest, CLAIM )).to.be.true
+    })
+  })
+
+  describe( 'when the last event was claim', () => {
+
+    it( 'lastEventIsNot( request, "claim" ) returns false', () => {
+      const testRequest = request({ events: [
+        { name: ESCALATE },
+        { name: CLAIM }
+      ] })
+
+      expect( lastEventIsNot( testRequest, CLAIM )).to.be.false
+    })
+  })
+})
+
+describe.only( 'notEscalatedByMe', () => {
+
+  describe( 'when the request was escalated by me', () => {
+
+    it( 'returns false', () => {
+      const testRequest = request({ events: [
+        { name: ESCALATE, data: { escalated_by: DEFAULT_COACH_ID } },
+        { name: ESCALATE, data: { escalated_by: OTHER_ID } }
+      ] })
+
+      expect( notEscalatedByMe( testRequest, DEFAULT_COACH_ID )).to.be.false
+    })
+  })
+
+  describe( 'when the request was escalated by another coach', () => {
+
+    it( 'returns true', () => {
+      const testRequest = request({ events: [
+        { name: ESCALATE, data: { escalated_by: OTHER_ID } }
+      ] })
+
+      expect( notEscalatedByMe( testRequest, DEFAULT_COACH_ID )).to.be.true
+    })
+  })
+
+  describe( 'when the request has not been escalated', () => {
+
+    it( 'returns true', () => {
+      const testRequest = request({})
+
+      expect( notEscalatedByMe( testRequest, DEFAULT_COACH_ID )).to.be.true
+    })
+  })
+})

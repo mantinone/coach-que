@@ -1,3 +1,4 @@
+const moment = require( 'moment' )
 const { CLAIM, ESCALATE } = require( '../../events/requests/constants' )
 
 const THRESHOLD = 30
@@ -21,16 +22,27 @@ const lastEventIsNot = ({ events }, eventName ) =>
   events[ events.length - 1 ].name !== eventName
 
 const notEscalatedByMe = ({ events }, coachId ) =>
-  ! events.some( event => event.name === ESCALATE && event.data.escalatedBy === coachId )
+  ! events.some( event => event.name === ESCALATE && event.data.escalated_by === coachId )
 
-const visible = () => {   }
+const isMyUnclaimedGoal = ( request, coachId ) =>
+  isMyGoal( request, coachId ) && isUnclaimed( request )
+
+const isOldUnclaimedNotMyGoal = () =>
+  ( ! isMyGoal( request, coachId ) ) && isPastThreshold( request ) && isUnclaimed( request )
+
+const isClaimableEscalation = () =>
+  isEscalated( request ) && notEscalatedByMe( request, coachId ) && lastEventIsNot( request, CLAIM )
 
 const isVisible = ( request, coachId ) =>
-  ( isMyGoal( request, coachId ) && isUnclaimed( request ) ) ||
-  ( ! isMyGoal( request, coachId ) && isPastThreshold( request ) && isUnclaimed( request )) ||
-  ( isEscalated( request ) && notEscalatedByMe( request, coachId ) && lastEventIsNot( request, CLAIM ))
+  isMyUnclaimedGoal( request, coachId ) ||
+  isOldUnclaimedNotMyGoal( request, coachId ) ||
+  isClaimableEscalation( request, coachId )
+
+const visible = ( requests, coachId ) =>
+  requests.map( request => Object.assign( {}, request, { visible: isVisible( request, coachId ) }))
 
 module.exports = {
+  THRESHOLD,
   visible, isVisible,
   isMyGoal, isUnclaimed, isPastThreshold,
   isEscalated, lastEventIsNot, notEscalatedByMe

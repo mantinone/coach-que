@@ -17,11 +17,11 @@ const request = ({ created_at, escalations, coach_id, events }) => ({
 const REQUESTS = [
   {
     created_at: minutesAgo( 15 ),
-    events: [{ "by": "Bob Dole", "question": "0: my team requested, within threshold" }]
+    events: [{ "by": "Bob Dole", "question": "0: my team requested, within threshold, Visible = true" }]
   },
   {
     created_at: minutesAgo( 60 ),
-    events: [{ "by": "Bob Dole", "question": "1: my team requested, past threshold" }]
+    events: [{ "by": "Bob Dole", "question": "1: my team requested, past threshold, Visible = true" }]
   },
   {
     created_at: minutesAgo( 15 ),
