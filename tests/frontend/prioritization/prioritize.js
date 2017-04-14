@@ -1,4 +1,4 @@
-const { request, minutesAgo } = require( '../../fixtures/requests' )
+const { Factory, minutesAgo } = require( '../../fixtures/requests' )
 const { calculatePriority, prioritize
 } = require( '../../../frontend/prioritization/prioritize' )
 const { CREATE, ESCALATE } = require( '../../../events/requests/constants' )
@@ -8,11 +8,11 @@ describe( 'calculatePriority', () => {
 
   describe( 'comparing one older and one newer request', () => {
 
-    const newerRequest = request( {
+    const newerRequest = Factory.request( {
       events: [{ created_at: minutesAgo( 3 ) }]
     })
 
-    const olderRequest = request( {
+    const olderRequest = Factory.request( {
       events: [{ created_at: minutesAgo( 60 ) }]
     })
 
@@ -25,13 +25,13 @@ describe( 'calculatePriority', () => {
 
   describe( 'comparing a recently escalated request with an older unescalated request', () => {
 
-    const recentlyEscalated = request( {
+    const recentlyEscalated = Factory.request( {
       events: [{ name: CREATE, created_at: minutesAgo( 61 ) },
         { name: ESCALATE, created_at: minutesAgo( 3 ) }
       ]
     })
 
-    const olderUnescalated = request( {
+    const olderUnescalated = Factory.request( {
       events: [{ name: CREATE, created_at: minutesAgo( 60 ) }]
     })
 
@@ -47,17 +47,17 @@ describe( 'prioritize', () => {
 
   describe( 'given a series of requests', () => {
 
-    const priorityOneEvent = request({
+    const priorityOneEvent = Factory.request({
       events: [{ name: CREATE, created_at: minutesAgo( 60 ) }]
     })
 
-    const priorityTwoEvent = request( {
+    const priorityTwoEvent = Factory.request( {
       events: [{ name: CREATE, created_at: minutesAgo( 61 ) },
         { name: ESCALATE, created_at: minutesAgo( 3 ) }
       ]
     })
 
-    const priorityThreeEvent = request( {
+    const priorityThreeEvent = Factory.request( {
       events: [{ name: CREATE, created_at: minutesAgo( 2 ) }]
     })
 

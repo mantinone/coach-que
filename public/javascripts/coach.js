@@ -47,22 +47,12 @@ const render = ( goals, userId ) => {
   return requests => {
     removeEvents()
 
-    // const decorateActive = active( requests, userId )
-    // const decorateVisible = visible( decorateActive, userId )
-    // const prioritized = prioritize( decorateVisible )
-
     const decoratedSortedRequests = prioritize( visible( active( requests, userId ), userId ))
 
-    const activeRequests = decoratedSortedRequests.filter( request => request.active )
     const visibleRequests = decoratedSortedRequests.filter( request => request.visible )
-
-    //types of decoration in old code: escalatable, claimable
-
-    // const activeRequests = requests.filter( ({ events }) =>
-    //   events.some( ({ data }) => data.escalated_by === userId || data.claimed_by === userId )
-    // ).map( request => Object.assign( {}, request, { escalatable:
-    //   !request.events.some( ({ data }) => data.escalated_by === userId )}
-    // ))
+    const activeRequests = decoratedSortedRequests.filter( request => request.active )
+      .map( request => Object.assign( {}, request, { escalatable:
+        !request.events.some( ({ data }) => data.escalated_by === userId )} ))
 
     const claimableRequests = requests.filter( request =>
       ! request.events.some( ({ data }) => data.claimed_by === userId )
@@ -88,7 +78,7 @@ const ageRequests = () => {
   const requests = Array.from( document.querySelectorAll( '.panel' ) )
 
   requests.forEach( request => {
-    if( isPastThreshold( request.dataset.createdAt )) {
+    if( isPastThreshold( request.dataset )) {
       request.classList.remove( 'panel-default', 'panel-success' )
       request.classList.add( 'panel-danger' )
     }
@@ -136,6 +126,7 @@ const escalationClick = event => {
   const { request_id } = event.target.dataset
 
   fetch( '/events', params( 'post', { request_id, name: 'escalate' }))
+    .then( _ => window.location.reload( true ) )
 }
 
 const claimClick = event => {
@@ -144,6 +135,7 @@ const claimClick = event => {
   const { request_id } = event.target.dataset
 
   fetch( '/events', params( 'post', { request_id, name: 'claim' }))
+    .then( _ => window.location.reload( true ) )
 }
 
 const addEvents = () => {

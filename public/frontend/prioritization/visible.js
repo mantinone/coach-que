@@ -1,6 +1,6 @@
 // const moment = require( 'moment' )
 // const { CLAIM, ESCALATE } = require( '../../events/requests/constants' )
-
+//
 // const THRESHOLD = 30
 // const THRESHOLD_UNIT = 'minute'
 
@@ -11,9 +11,7 @@ const isUnclaimed = ({ events }) =>
   ! events.some( event => event.name === CLAIM )
 
 const isPastThreshold = ({ created_at }) =>
-  moment.duration(
-    moment().diff( moment( created_at ))
-  ).get( THRESHOLD_UNIT ) > THRESHOLD
+  moment().subtract( THRESHOLD, THRESHOLD_UNIT ).isAfter( moment( created_at ))
 
 const isEscalated = ({ events }) =>
   events.some( event => event.name === ESCALATE )
@@ -33,7 +31,7 @@ const isOldUnclaimedNotMyGoal = ( request, coachId ) =>
 const isClaimableEscalation = ( request, coachId ) =>
   isEscalated( request ) && notEscalatedByMe( request, coachId ) && lastEventIsNot( request, CLAIM )
 
-const isVisible = ( request, coachId ) =>
+const isVisible = ( request, coachId ) => {
   isMyUnclaimedGoal( request, coachId ) ||
   isOldUnclaimedNotMyGoal( request, coachId ) ||
   isClaimableEscalation( request, coachId )

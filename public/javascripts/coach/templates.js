@@ -33,7 +33,7 @@ const queueTemplate = ({ id, goal, created_at, events, players, claimable, escal
   }[ events[ events.length - 1 ].name ]
 
   return `
-    <div class="panel panel-${type}" data-created-at="${created_at}">
+    <div class="panel panel-${type}" data-created_at="${created_at}">
       <div class="panel-heading">
         <em>${currentStatus}</em><br />
         <a href="${goal.link}" alt="${goal.title}" target="_blank">
