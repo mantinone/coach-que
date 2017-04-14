@@ -1,4 +1,4 @@
-const moment = require( 'moment' )
+// const moment = require( 'moment' )
 
 const calculatePriority = ({ events }) => moment( ).diff( moment( events[ events.length - 1 ].created_at ) )
 
